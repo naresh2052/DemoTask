@@ -6,6 +6,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../DataBase/entity.dart';
+import '../DataBase/tbldao.dart';
 import '../Model/DataModel.dart';
 import '../Utils/AppConstants.dart';
 
@@ -14,7 +16,8 @@ class GetDataController extends GetxController{
   var isLoading = false.obs;
   var hasInternet = false.obs;
   RxList<DataModel> dataList= <DataModel>[].obs;
-  Future getData(BuildContext context)async{
+
+  Future getData(BuildContext context,TblDao? tblDao)async{
     hasInternet.value = await InternetConnectionChecker().hasConnection;
    try{
      if(hasInternet.value) {
@@ -25,6 +28,13 @@ class GetDataController extends GetxController{
        if (response.statusCode == 200) {
          for (var i in response.data) {
            dataList.value.add(DataModel.fromJson(i));
+               tblDao!.insertData(
+                   TblData(
+                     name:DataModel.fromJson(i).name!,
+                     fullName: DataModel.fromJson(i).fullName!,
+                     avatarUrl: DataModel.fromJson(i).owner!.avatarUrl!,
+                   )
+               );
          }
          isLoading.value = false;
        }

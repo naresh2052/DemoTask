@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import 'DataBase/database.dart';
+import 'DataBase/tbldao.dart';
 import 'View/HomeScreen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main()async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database = await $FloorAppDatabase.databaseBuilder('Appdatabase.db').build();
+  final tblDao = database.tblDao;
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp( MyApp(tblDao: tblDao,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  TblDao? tblDao;
+  MyApp({super.key,this.tblDao});
 
   // This widget is the root of your application.
   @override
@@ -29,7 +37,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true
       ),
-      home:  HomeScreen(),
+      home:  HomeScreen(tblDao: tblDao!),
     );
   }
 }
