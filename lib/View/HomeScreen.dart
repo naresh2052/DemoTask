@@ -1,10 +1,13 @@
 
-// ignore_for_file: invalid_use_of_protected_member, unnecessary_null_comparison
+// ignore_for_file: invalid_use_of_protected_member, unnecessary_null_comparison, use_build_context_synchronously
+
+import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:task/Utils/Show_Dailog.dart';
 import '../Controllers/GetDataController.dart';
 import '../DataBase/tbldao.dart';
 
@@ -34,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Home Screen'),
                 centerTitle: true,
               ),
-              body: Obx(() =>
+              body:snapshot.data != ConnectivityResult.none ? Obx(() =>
               getDataController.isLoading.value ?
               Center(
                 child: Container(
@@ -51,8 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )),
               )
-                  :snapshot.data != ConnectivityResult.none
-                  ? ListView.builder(
+                  : ListView.builder(
                   itemCount: getDataController.dataList.length,
                   itemBuilder: (context, index ){
                     return Padding(
@@ -72,8 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
               )
-                  :buildListView()
-              )
+              ):buildListView()
           );
         }
     );
@@ -81,11 +82,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    startStreaming();
     getDataController.getData(context,widget.tblDao);
     super.initState();
   }
 
+  late ConnectivityResult result;
+  late StreamSubscription subscription;
+  checkInternet()async{
+    result = await Connectivity().checkConnectivity();
+    if(result != ConnectivityResult.none){
+    }else{
+      context.showMessageDialog("No Internet Connection!!");
+    }
+  }
 
+  startStreaming(){
+    subscription =  Connectivity().onConnectivityChanged.listen((event) {
+      checkInternet();
+    });
+  }
 
   Widget buildListView(){
     final size = MediaQuery.of(context).size;
@@ -126,5 +142,4 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
   }
-
 }
